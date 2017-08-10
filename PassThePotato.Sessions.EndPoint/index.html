@@ -1,0 +1,210 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pass the Potato</title>
+    <link href="Content/bootstrap.min.css" rel="stylesheet">
+    <link href="Content/sb-admin-2/dist/css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="Content/sb-admin-2/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+    <div class="container" role="main">
+
+        <div class="page-header">
+            <div class="list-group">
+                <a href="#" class="list-group-item">
+                    <i class="fa fa-user fa-fw"></i> Your Name
+                    <span id="displayname" class="pull-right text-muted small">
+                        <em>Unknown</em>
+                    </span>
+                </a>
+                <a href="#" class="list-group-item">
+                    <i class="fa fa-hand-o-right fa-fw"></i> Potato Holder
+                    <span id="owner" class="pull-right text-muted small">
+                        <em>Unknown</em>
+                    </span>
+                </a>
+            </div>
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    Pass the Potato to
+                </div>
+                <div class="panel-body">
+                    <p>
+                        <fieldset id="controls" disabled>
+                            <input type="button" id="passLeft" class="btn btn-primary" value="N/A" />
+                            <input type="hidden" id="idLeft" />
+                            <input type="button" id="passRight" class="btn btn-primary" value="N/A" />
+                            <input type="hidden" id="idRight" />
+                        </fieldset>
+                    </p>
+                </div>
+            </div>
+
+            <div class="chat-panel panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-gamepad fa-fw"></i> Game Logs / Chat
+                    <div class="btn-group pull-right">
+                        <button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown">
+                            <i class="fa fa-chevron-down"></i>
+                        </button>
+                        <ul class="dropdown-menu slidedown">
+                            <li>
+                                <a onclick="$('ul').empty();" href="javascript:void(0);">
+                                    <i class="fa fa-times fa-fw"></i> Clear
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- /.panel-heading -->
+                <div class="panel-body">
+                    <ul id="discussion" class="chat"></ul>
+                </div>
+                <!-- /.panel-body -->
+                <div class="panel-footer">
+                    <div class="input-group">
+                        <input id="btn-input" type="text" class="form-control input-sm" placeholder="Type your message here...">
+                        <span class="input-group-btn">
+                            <button class="btn btn-warning btn-sm" id="send">
+                                Broadcast Message
+                            </button>
+                        </span>
+                    </div>
+                </div>
+                <!-- /.panel-footer -->
+            </div>
+
+            <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+ 
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                            <h4 class="modal-title" id="myModalLabel">Please enter your name</h4>
+                        </div>
+                        <div class="modal-body">
+                            <input id="nameInput" type="text" class="form-control input-sm" placeholder="Julius Caesar" autofocus>
+                        </div>
+                            <div class="modal-footer">
+                                <button type="submit" id="saveName" class="btn btn-primary" data-dismiss="modal" onclick="savename();">Join Game</button>
+                            </div>
+                    </div>
+                    <!-- /.modal-content -->
+                </div>
+                <!-- /.modal-dialog -->
+            </div>
+        </div>
+
+    </div>
+    <!--Script references. -->
+    <!--Reference the jQuery library. -->
+    <script src="Scripts/jquery-3.1.1.min.js"></script>
+    <!--Reference the SignalR library. -->
+    <script src="Scripts/jquery.signalR-2.2.2.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <!--Reference the autogenerated SignalR hub script. -->
+    <!-- ReSharper disable Html.PathError -->
+    <script src="signalr/hubs"></script>
+    <!-- ReSharper restore Html.PathError -->
+    <!--Add script to update the page and send messages.-->
+    <script type="text/javascript">
+
+        function savename() {
+            var name = $('#nameInput').val();
+            if (name.length < 1) {
+                name = 'NoName'; }
+            $('#displayname').text(name);
+            connect();
+        };
+
+        function connect() {
+            // Declare a proxy to reference the hub.
+            var response = $.connection.responseHub;
+            $.connection.hub.url = 'signalr';
+            $.connection.hub.qs = 'name=' + $('#displayname').text();
+
+            // Create functions that the hub can call to communicate.
+            response.client.broadcastMessage = function (name, message) {
+                // Html encode display name and message.
+                var encodedName = $('<div />').text(name).html();
+                var encodedMsg = $('<div />').text(message).html();
+                var now = new Date(Date.now());
+                var formatted = now.getHours() + ":" + now.getMinutes() + ":" + now.getSeconds();
+
+                // Add the message to the page.
+                $('#discussion').append('<li class="left clearfix">' +
+                    '<span class="chat-img pull-left">' +
+                    '<img src="http://placehold.it/50/55C1E7/fff" alt="User Avatar" class="img-circle">' +
+                    '</span>' +
+                    '<div class="chat-body clearfix">' +
+                    '<div class="header">' +
+                    '<strong class="primary-font">' +
+                    encodedName +
+                    '</strong>' +
+                    '<small class="pull-right text-muted">' +
+                    '<i class="fa fa-clock-o fa-fw"></i> ' +
+                    formatted +
+                    '</small>' +
+                    '</div><p>' +
+                    encodedMsg +
+                    '</p></div></li>');
+            };
+
+            response.client.whoHasPotato = function (id, name) {
+                $('#owner').text(name);
+                if (id === $.connection.hub.id) {
+                    response.server.whoCanIPassTo();
+                }
+            };
+
+            response.client.whoCanYouPassTo = function (idWhoCanPass, leftId, leftName, rightId, rightName) {
+                if (idWhoCanPass === $.connection.hub.id) {
+                    $('#controls').prop('disabled', false);
+                    $('#idLeft').val(leftId);
+                    $('#passLeft').val(leftName);
+                    $('#idRight').val(rightId);
+                    $('#passRight').val(rightName);
+                } else {
+                    $('#controls').prop('disabled', true);
+                    $('#idLeft').val("");
+                    $('#passLeft').val("N/A");
+                    $('#idRight').val("");
+                    $('#passRight').val("N/A");
+                }
+            };
+
+            // Set initial focus to message input box.
+            $('#text').focus();
+
+            // Start the connection.
+            $.connection.hub.start().done(function () {
+                $('#send').click(function () {
+                    // Call the Send method on the hub.
+                    response.server.send($('#displayname').text(), $('#btn-input').val());
+                    // Clear text box and reset focus for next comment.
+                    $('#guid').val('').focus();
+                });
+
+                $('#passLeft').click(function () {
+                    response.server.passThePotato($.connection.hub.id, $('#idLeft').val());
+                });
+
+                $('#passRight').click(function () {
+                    response.server.passThePotato($.connection.hub.id, $('#idRight').val());
+                });
+
+            });
+        }
+
+        $(function () {
+            // Get the user name and store it to prepend to messages.
+            $('#myModal').modal();
+        });
+    </script>
+</body>
+</html>

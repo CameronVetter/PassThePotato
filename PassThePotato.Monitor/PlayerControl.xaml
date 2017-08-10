@@ -1,0 +1,13 @@
+﻿<UserControl x:Class="PassThePotato.Monitor.PlayerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="135" d:DesignWidth="115">
+    <Grid Margin="20">
+        <Rectangle Stroke="Black" Fill="White" Width="75" Height="95" />
+        <TextBox x:Name="Text" Text ="LongNameMcLongy" Width="75" BorderThickness="0" Background="SlateBlue" TextAlignment="Center" Foreground="AliceBlue" VerticalAlignment="Top" HorizontalAlignment="Center" FontSize="14" TextWrapping="Wrap"></TextBox>
+        <Image x:Name="Potato"  Source="images/potato.png" Width="75" Visibility="Hidden"></Image>
+    </Grid>
+</UserControl>
